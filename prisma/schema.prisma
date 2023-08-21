@@ -10,15 +10,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id Int @id @default(autoincrement())
+  username String @unique
+  email String @unique
+  password String
+  refresh_token String?
+  monitors Monitor[]
+
+  @@index([username])
+}
+
 model Monitor {
   id Int @id @default(autoincrement())
   url String
   name String
   interval Int @default(600)
+  last_down DateTime?
   down_since DateTime?
   down Boolean @default(false)
   recipient String
   monitor_enabled Boolean @default(true)
+  user User @relation(fields: [userId], references: [id])
+  userId Int
 
   @@index([name])
 }
