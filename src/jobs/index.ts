@@ -36,6 +36,8 @@ const job = cron.scheduleJob(EVERY_MINUTE, async (data) => {
                 const message = `${monitor.name} is currently down. You may check the services depending on it.`
                 sendMail(monitor.recipient, `${monitor.name} is down`, message);
             }
+
+            //update the monitor's scheduled field to true
         }.bind(null, monitor))
     }
 
