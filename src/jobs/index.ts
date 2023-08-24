@@ -22,7 +22,6 @@ type Monitor = {
 const EVERY_MINUTE = parseTime(60);
 
 const job = cron.scheduleJob(EVERY_MINUTE, async (data) => {
-    console.log("running every minute", data);
 
     const monitors = await prisma.monitor.findMany({ where: { scheduled: false } });
 
@@ -40,5 +39,4 @@ const job = cron.scheduleJob(EVERY_MINUTE, async (data) => {
         }.bind(null, monitor))
     }
 
-    console.log("After scheduling jobs")
 })
