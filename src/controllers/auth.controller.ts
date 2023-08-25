@@ -86,3 +86,23 @@ export const refreshTokenController = async (req: Request, res: Response) => {
         }
     )
 }
+
+export const logoutUserController =async (req: Request, res: Response) => {
+    const cookies = req.cookies;
+
+    if (!cookies?.jwt) return res.sendStatus(204);
+    const refreshToken = cookies.jwt;
+
+    const user = await prisma.user.findFirst({ where: { refresh_token: refreshToken } })
+
+    if (!user) {
+        
+        res.clearCookie("jwt", { httpOnly: true });
+        return res.sendStatus(204);
+    }
+
+    const updatedUser = await prisma.user.update({ where: { id: user.id }, data: { refresh_token: null } });
+
+    res.clearCookie("jwt", { httpOnly: true });
+    return res.sendStatus(204);
+}
