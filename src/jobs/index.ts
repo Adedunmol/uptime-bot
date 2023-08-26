@@ -3,7 +3,6 @@ import * as cron from "node-schedule";
 import prisma from "../config/prisma-client";
 import isSiteUp from "../utils/get-site";
 import sendMail from "../utils/email";
-import { Prisma } from "@prisma/client";
 
 type Monitor = {
     id: number;
@@ -32,13 +31,26 @@ const job = cron.scheduleJob(EVERY_MINUTE, async (data) => {
 
             // send mail to the user if site is down
             if (!siteIsUp) {
+                const updateMonitor = prisma.monitor.update({ where: { id: monitor.id }, data: { last_down: Date(), scheduled: false } });
+                const message = `${monitor.name} is currently down at ${Date.now()}. You may check the services depending on it.`
+                Promise.all([
+                    sendMail(monitor.recipient, `${monitor.name} is down`, message),
+                    updateMonitor
+                ]).then(values => {
 
-                const message = `${monitor.name} is currently down. You may check the services depending on it.`
-                sendMail(monitor.recipient, `${monitor.name} is down`, message);
+                    console.log(values);
+                    console.log("done");
+                }).catch(err => {
+                    
+                    console.log("An error occurred", err);
+                })
             }
 
-            //update the monitor's scheduled field to true
         }.bind(null, monitor))
+
+        //update the monitor's scheduled field to true
+        const updateMonitor = await prisma.monitor.update({ where: { id: monitor.id }, data: { scheduled: true } });
+
     }
 
 })

@@ -1,6 +1,10 @@
 import * as jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 
+interface DecodedData {
+    username: string
+}
+
 const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers["authorization"];
 
@@ -10,9 +14,9 @@ const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!, (err, decoded) => {
         if (err) return res.status(403).json({ status: "fail", message: "Bad token" });
+        const data = decoded as DecodedData;
 
-        // @ts-ignore
-        req.user = decoded;
+        req.user = data.username;
         
         next()
     })
